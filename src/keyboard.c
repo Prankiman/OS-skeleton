@@ -13,11 +13,8 @@ void keyboard_handler(registers_t *regs) {
     u8 scancode = inb(0x60);
 
 
-    if (scancode == ENTER){
+    if (scancode == ENTER || scancode == I_code){
        keypressmsg();
-    }
-    if(scancode == I_code){
-        mouse_install();
     }
 }
 

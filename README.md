@@ -2,7 +2,7 @@
 bare bones kernel and bootloader that can be built upon to create more impressive and feature rich 32-bit operating systems
 
 ## running
-run `make iso` to create the image file
+run `make iso` in the src folder to create the image file
 
 not that it works differently on hardware depending on the hardware vendors. Mouse input might work if your computer has an internal pointing device or if your computer supports 2 ps/2 inputs and possible with a usb mouse since they typically will emulate ps/2 mice. I got the keyboard input to work on both of the laptops I tested on but only one of them worked with the mouse driver
 
