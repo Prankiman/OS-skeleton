@@ -1,0 +1,122 @@
+[bits 16]
+[org 0x7c00]
+kernel_offset equ 0x1000
+
+xor ax, ax
+mov ds, ax
+mov ss, ax
+
+mov [boot_drive], dl
+
+mov bp, 0x9000
+mov sp, bp
+
+mov bx, real_msg
+call print
+
+
+call load_kernel
+;call vga_mode ;uncomment if you want to use vga 8-bit color mode
+
+jmp enter_pm
+
+;jmp $
+
+;include files
+%include "print_string.asm"
+%include "load_disk.asm"
+%include "gdt.asm"
+%include "print_protected.asm"
+%include "enter_pm.asm"
+
+
+[bits 16]
+
+load_kernel:
+
+    mov bx, kernel_msg
+    call print
+
+    mov bx, kernel_offset
+    mov dh, 15;number of sectors to read
+    mov dl, [boot_drive]
+    call disk_load
+
+    ret
+
+
+[bits 16]
+vga_mode:
+    pusha
+    mov ah, 0x00
+    mov al, 0x13
+    int 0x10
+    popa
+    ret
+
+[bits 32]
+
+enable_A20:
+        cli
+
+        call    a20wait
+        mov     al,0xAD
+        out     0x64,al
+
+        call    a20wait
+        mov     al,0xD0
+        out     0x64,al
+
+        call    a20wait2
+        in      al,0x60
+        push    eax
+
+        call    a20wait
+        mov     al,0xD1
+        out     0x64,al
+
+        call    a20wait
+        pop     eax
+        or      al,2
+        out     0x60,al
+
+        call    a20wait
+        mov     al,0xAE
+        out     0x64,al
+
+        call    a20wait
+        sti
+        ret
+
+a20wait:
+        in      al,0x64
+        test    al,2
+        jnz     a20wait
+        ret
+
+
+a20wait2:
+        in      al,0x64
+        test    al,1
+        jz      a20wait2
+        ret
+
+begin:
+
+    mov ebx, protected_msg
+    call print_pm
+    call enable_A20
+    call kernel_offset ;jump to kernel address
+    ;call main
+
+jmp $
+
+;variables
+boot_drive db 0x80
+real_msg db "real ", 0
+protected_msg db " protected ", 0
+kernel_msg db "kernel ", 0
+
+
+times 510-($-$$) db 0x0
+dw 0xaa55
