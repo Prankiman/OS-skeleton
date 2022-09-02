@@ -40,7 +40,7 @@ void left_clickmsg(){
         }
 }
 
-extern void wait1();
+//extern void wait1();
 
 void main() {
 
