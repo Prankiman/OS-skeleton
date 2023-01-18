@@ -85,13 +85,30 @@ is_A20_on:
 	je enable_A20        ;if not equivalent , A20 line is set.
 	ret               ;if equivalent , the A20 line is cleared.
  
-enable_A20:
-    pusha
-    in al, 0x92
-    or al, 2
-    out 0x92, al
-    popa
-    ret
+;enable_A20: ;fast a20 gate
+;    in al, 0x92
+;    or al, 2
+;    out 0x92, al
+
+enable_A20: ;freeBSD's implementation
+    cli
+
+enable_A20.1:
+    dec cx                      ; Timeout?
+    jz enable_A20.3                       ; Yes
+    in al, 0x64                 ; Get status
+    test al, 0x2                ; Busy?
+    jnz enable_A20.1                      ; Yes
+    mov al, 0xd1                ; Command: write
+    out 0x64, al                ;  output port
+enable_A20.2:
+    in al, 0x64                 ; Get status
+    test al, 0x2                ; Busy?
+    jnz enable_A20.2                      ; Yes
+    mov al, 0xdf                ; Enable
+    out 0x60, al                ;  A20
+
+enable_A20.3:
 
 begin:
 
